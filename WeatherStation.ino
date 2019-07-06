@@ -12,13 +12,16 @@ const char* password = "arianwenmax";
 float currentTemp;
 float lowTemp;
 float highTemp;
+float avgTemp;
 
 float currentHumid;
 float lowHumid;
 float highHumid;
+float avgHumid;
 
 bool resetHour = false;
 
+TaskHandle_t avg;
 WiFiClient espClient;
 AsyncWebServer server(80);
 DHT dht(23, 11);
@@ -51,13 +54,17 @@ String HTML() {
   fullAdd += currentTemp;
   fullAdd += "</span><sup> C </sup><br><br><br>\n\n<table style=\"width:100%\";>\n  <tr>\n    <td class=\"smallerTitles\";>Low</td>\n    <td class=\"smallerTitles\";>Avg</td> \n    <td class=\"smallerTitles\";>High</td>\n  </tr>\n  <tr>\n    <td class=\"smallerNumbers\";>";
   fullAdd += lowTemp;
-  fullAdd += " <sup>c</sup></td>\n    <td class=\"smallerNumbers\";>.. <sup>c</sup></td> \n    <td class=\"smallerNumbers\";>";
+  fullAdd += " <sup>c</sup></td>\n    <td class=\"smallerNumbers\";>";
+  fullAdd += avgTemp;
+  fullAdd += " <sup>c</sup></td> \n    <td class=\"smallerNumbers\";>";
   fullAdd += highTemp;
   fullAdd += " <sup>c</sup></td>\n  </tr>\n</table>\n<br>\n</div>\n\n<div style=\"background-color:#0DC2EA\";><br>\n<span class=\"title\";>Humidity</span><img src=\"https://image.flaticon.com/icons/png/512/63/63123.png\" style=\"width:120px;height:120px;float:right;\">\n<br><br>\n<span class=\"largeNumber\";>";
   fullAdd += currentHumid;
   fullAdd += "</span><sup> % </sup><br><br><br>\n\n<table style=\"width:100%\";>\n  <tr>\n    <td class=\"smallerTitles\";>Low </td>\n    <td class=\"smallerTitles\";>Avg</td> \n    <td class=\"smallerTitles\";>High </td>\n  </tr>\n  <tr>\n    <td class=\"smallerNumbers\";>";
   fullAdd += lowHumid;
-  fullAdd += " %</td>\n    <td class=\"smallerNumbers\";>.. %</td> \n    <td class=\"smallerNumbers\";>";
+  fullAdd += " %</td>\n    <td class=\"smallerNumbers\";>";
+  fullAdd += avgHumid;
+  fullAdd += " %</td> \n    <td class=\"smallerNumbers\";>";
   fullAdd += highHumid;
   fullAdd += " %</td>\n  </tr>\n</table>\n<br>\n</div>\n\n</body>\n</html>";
 
@@ -84,7 +91,7 @@ String HTML() {
 
 void setup() {
   Serial.begin(115200);
-
+  pinMode(2, OUTPUT);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -97,6 +104,17 @@ void setup() {
   });
 
   server.begin();
+
+  xTaskCreatePinnedToCore(
+                    averageCalc,   /* Task function. */
+                    "Avg",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &avg,      /* Task handle to keep track of created task */
+                    1);          /* pin task to core 1 */
+    delay(500); 
+
 
   delay(1000);
   Serial.println(WiFi.localIP());
@@ -116,18 +134,31 @@ void loop() {
   currentHumid = dht.readHumidity();
   checkLow();
   checkHigh();
-  Serial.println(dht.readTemperature());
-  Serial.println(dht.readHumidity());
-  Serial.println("");
+
   int currentHour = timeClient.getHours();
-  Serial.println(currentHour);
-  
-  if(timeClient.getHours() == 23 && timeClient.getMinutes() == 55){
+
+  if (timeClient.getHours() == 23 && timeClient.getMinutes() == 55) {
     highTemp = currentTemp;
     lowTemp = currentTemp;
 
     highHumid = currentHumid;
     lowHumid = currentHumid;
   }
-  delay(2000);  
+  delay(2000);
+}
+
+void averageCalc( void * pvParameters ){
+  Serial.print("Task2 running on core ");
+  Serial.println(xPortGetCoreID());
+  delay(5000);
+  
+  avgTemp = currentTemp;
+  avgHumid = currentHumid;
+  delay(2000);
+  
+  for(;;){  
+    avgTemp = (avgTemp + currentTemp)/2;
+    avgHumid = (avgHumid + currentHumid)/2;
+    delay(5000);
+  }
 }
