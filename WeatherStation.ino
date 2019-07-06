@@ -6,8 +6,8 @@
 #include <WiFi.h>
 #include <TimeLib.h>
 
-const char* ssid = "WLANAP-Z";
-const char* password = "arianwenmax";
+const char* ssid = "xxx";
+const char* password = "xxx";
 
 float currentTemp;
 float lowTemp;
