@@ -143,6 +143,9 @@ void loop() {
 
     highHumid = currentHumid;
     lowHumid = currentHumid;
+
+    avgTemp = currentTemp;
+    avgHumid = currentHumid;
   }
   delay(2000);
 }
