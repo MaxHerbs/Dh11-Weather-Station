@@ -6,8 +6,8 @@
 #include <WiFi.h>
 #include <TimeLib.h>
 
-const char* ssid = "xxx";
-const char* password = "xxx";
+const char* ssid = "WLANAP-Z";
+const char* password = "arianwenmax";
 
 float currentTemp;
 float lowTemp;
@@ -48,7 +48,13 @@ void checkLow() {
   }
 }
 
+String msg() {
+  String msg = (String)currentTemp;
+  msg += ",";
+  msg += (String)currentHumid;
 
+  return msg;
+}
 String HTML() {
   String fullAdd = "<!DOCTYPE html>\n<html>\n<head>\n<style>\nbody{\n\tfont-family: Arial, Helvetica, sans-serif;\n\tcolor: white;\n}\ndiv{\n\tmargin: auto;\t\n\twidth: 60%;\n\n\tbackground-color: orange;\n\tborder: 5px solid white;\n\tpadding: 10px;\n}\nsup{\n\tvertical-align: top;\n\tfont-weight: bold;\n\tfont-size: 20px;\n}\n.title{\n\tfont-weight:bold;\n\tfont-size: 30px;\n\tmargin: 30px;\n}\n.largeNumber{\n\tfont-size: 65px;\n\tfont-weight: bold;\n\tmargin: 30px;\n}\n.smallerNumbers{\n\tfont-size: 25px;\n\tmargin: 30px;\n}\n.smallerTitles{\n\tfont-size:30px;\n\tmargin: 30px;\n}\ntd{\n\ttext-align:center;\n}\n</style>\n</head>\n<body>\n\n<div><br>\n<span class=\"title\";>Temperature</span><img src=\"https://image.flaticon.com/icons/png/512/56/56295.png\" style=\"width:120px;height:120px;float:right;\">\n<br><br>\n<span class=\"largeNumber\";>";
   fullAdd += currentTemp;
@@ -78,20 +84,8 @@ String HTML() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 void setup() {
   Serial.begin(115200);
-  pinMode(2, OUTPUT);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -102,22 +96,21 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(200, "text/html", HTML());
   });
-
+  server.on("/csv", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(200, "text/plain", msg());
+  });
   server.begin();
 
   xTaskCreatePinnedToCore(
-                    averageCalc,   /* Task function. */
-                    "Avg",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
-                    &avg,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1 */
-    delay(500); 
-
+    averageCalc,
+    "Avg",
+    10000,
+    NULL,
+    1,
+    &avg,
+    1);
 
   delay(1000);
-  Serial.println(WiFi.localIP());
   currentTemp = dht.readTemperature();
   currentHumid = dht.readHumidity();
 
@@ -150,18 +143,23 @@ void loop() {
   delay(2000);
 }
 
-void averageCalc( void * pvParameters ){
+void averageCalc( void * pvParameters ) {
   Serial.print("Task2 running on core ");
   Serial.println(xPortGetCoreID());
   delay(5000);
-  
+
   avgTemp = currentTemp;
   avgHumid = currentHumid;
   delay(2000);
-  
-  for(;;){  
-    avgTemp = (avgTemp + currentTemp)/2;
-    avgHumid = (avgHumid + currentHumid)/2;
+
+  for (;;) {
+    if (!isnan((avgTemp + currentTemp) / 2)) {
+      avgTemp = (avgTemp + currentTemp) / 2;
+    }
+
+    if (!isnan((avgHumid + currentHumid) / 2)) {
+      avgHumid = (avgHumid + currentHumid) / 2;
+    }
     delay(5000);
   }
 }
