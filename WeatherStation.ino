@@ -6,8 +6,8 @@
 #include <WiFi.h>
 #include <TimeLib.h>
 
-const char* ssid = "WLANAP-Z";
-const char* password = "arianwenmax";
+const char* ssid = "";
+const char* password = "";
 
 float currentTemp;
 float lowTemp;
@@ -56,7 +56,7 @@ String msg() {
   return msg;
 }
 String HTML() {
-  String fullAdd = "<!DOCTYPE html>\n<html>\n<head>\n<style>\nbody{\n\tfont-family: Arial, Helvetica, sans-serif;\n\tcolor: white;\n}\ndiv{\n\tmargin: auto;\t\n\twidth: 60%;\n\n\tbackground-color: orange;\n\tborder: 5px solid white;\n\tpadding: 10px;\n}\nsup{\n\tvertical-align: top;\n\tfont-weight: bold;\n\tfont-size: 20px;\n}\n.title{\n\tfont-weight:bold;\n\tfont-size: 30px;\n\tmargin: 30px;\n}\n.largeNumber{\n\tfont-size: 65px;\n\tfont-weight: bold;\n\tmargin: 30px;\n}\n.smallerNumbers{\n\tfont-size: 25px;\n\tmargin: 30px;\n}\n.smallerTitles{\n\tfont-size:30px;\n\tmargin: 30px;\n}\ntd{\n\ttext-align:center;\n}\n</style>\n</head>\n<body>\n\n<div><br>\n<span class=\"title\";>Temperature</span><img src=\"https://image.flaticon.com/icons/png/512/56/56295.png\" style=\"width:120px;height:120px;float:right;\">\n<br><br>\n<span class=\"largeNumber\";>";
+  String fullAdd = "<!DOCTYPE html>\n<html>\n<head>\n<style>\nbody{\n\tfont-family: Arial, Helvetica, sans-serif;\n\tcolor: white;\n}\ndiv{\n\tmargin: auto;\t\n\twidth: 60%;\n\n\tbackground-color: orange;\n\tborder: 5px solid white;\n\tpadding: 10px;\n}\nsup{\n\tvertical-align: top;\n\tfont-weight: bold;\n\tfont-size: 20px;\n}\n.title{\n\tfont-weight:bold;\n\tfont-size: 30px;\n\tmargin: 30px;\n}\n.largeNumber{\n\tfont-size: 65px;\n\tfont-weight: bold;\n\tmargin: 30px;\n}\n.smallerNumbers{\n\tfont-size: 25px;\n\tmargin: 30px;\n}\n.smallerTitles{\n\tfont-size:30px;\n\tmargin: 30px;\n}\ntd{\n\ttext-align:center;width:33%;\n}\n</style>\n</head>\n<body>\n\n<div><br>\n<span class=\"title\";>Temperature</span><img src=\"https://image.flaticon.com/icons/png/512/56/56295.png\" style=\"width:120px;height:120px;float:right;\">\n<br><br>\n<span class=\"largeNumber\";>";
   fullAdd += currentTemp;
   fullAdd += "</span><sup> C </sup><br><br><br>\n\n<table style=\"width:100%\";>\n  <tr>\n    <td class=\"smallerTitles\";>Low</td>\n    <td class=\"smallerTitles\";>Avg</td> \n    <td class=\"smallerTitles\";>High</td>\n  </tr>\n  <tr>\n    <td class=\"smallerNumbers\";>";
   fullAdd += lowTemp;
